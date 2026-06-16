@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend
+  namespace: secret-lab
+type: Opaque
+stringData:
+  .env: |
+    APP_NAME=Learn DevOps Now
+    BACKEND_PORT=8000
+    FLASK_ENV=production
+    POSTGRES_DB=appdb
+    POSTGRES_USER=admin
+    POSTGRES_PASSWORD=password123
+    DB_HOST=postgres
+    DB_PORT=5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: secret-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: bhonemyintthu/secret-lab-backend:1.0
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: dotenv
+          mountPath: /app/.env
+          subPath: .env
+      volumes:
+      - name: dotenv
+        secret:
+          secretName: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: secret-lab
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 8000
