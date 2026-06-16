@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: private-app
+  namespace: secret-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: private-app
+  template:
+    metadata:
+      labels:
+        app: private-app
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
+      containers:
+      - name: private-app
+        image: learndevopsnow123/python-flask-app:1.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: private-app-service
+  namespace: secret-lab
+spec:
+  type: ClusterIP
+  selector:
+    app: private-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+    protocol: TCP
